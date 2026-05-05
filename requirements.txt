@@ -1,0 +1,9 @@
+pyautogui>=0.9.54
+pytesseract>=0.3.10
+deep-translator>=1.11.4
+keyboard>=0.13.5
+mouse>=0.7.1
+Pillow>=10.0.0
+screeninfo>=0.8.1
+customtkinter>=5.2.0
+pystray>=0.19.5

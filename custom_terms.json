@@ -1,0 +1,26 @@
+[
+  {
+    "src_lang": "fr",
+    "src_term": "pano",
+    "dst_lang": "pt",
+    "dst_term": "conjunto"
+  },
+  {
+    "src_lang": "pt",
+    "src_term": "conjunto",
+    "dst_lang": "fr",
+    "dst_term": "pano"
+  },
+  {
+    "src_lang": "fr",
+    "src_term": "farmer",
+    "dst_lang": "pt",
+    "dst_term": "farmar"
+  },
+  {
+    "src_lang": "pt",
+    "src_term": "farmar",
+    "dst_lang": "fr",
+    "dst_term": "farmer"
+  }
+]
