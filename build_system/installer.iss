@@ -13,9 +13,10 @@
 ; Output: dist/DofusinatorSetup.exe
 
 #define APP_NAME "Dofusinator"
-#define APP_VERSION "1.0.32"
+#define APP_VERSION "1.0.33"
 #define APP_PUBLISHER "@afkdino"
-#define APP_DESCRIPTION "Dofusinator (Translator) - Tradutor em tempo real do chat do Dofus"
+#define APP_COPYRIGHT "Copyright (c) 2026 Guilherme G. Ferreira"
+#define APP_DESCRIPTION "Dofusinator - Real-time chat translator for Dofus Retro (FR/PT/EN/ES)"
 #define APP_EXE "Dofusinator.exe"
 #define APP_GUID "{{A7F3E2D8-5C4B-4F1E-9D7A-3B8E6F2C9A0E}"
 
@@ -26,6 +27,7 @@ AppName={#APP_NAME}
 AppVersion={#APP_VERSION}
 AppVerName={#APP_NAME} {#APP_VERSION}
 AppPublisher={#APP_PUBLISHER}
+AppCopyright={#APP_COPYRIGHT}
 AppComments={#APP_DESCRIPTION}
 
 ; Instala em AppData\Local (nao precisa admin)
