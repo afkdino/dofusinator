@@ -10,13 +10,13 @@ import threading
 from pathlib import Path
 from typing import Optional, Callable
 
-from settings import Settings, get_app_dir
+from settings import Settings, get_app_dir, get_resource_dir
 from app_info import APP_NAME, APP_FULL_NAME, APP_ID
 from i18n import t
 
 log = logging.getLogger(__name__)
 
-ASSETS_DIR = get_app_dir() / "assets"
+ASSETS_DIR = get_resource_dir() / "assets"
 
 
 def _create_placeholder_icon(size: int = 64):
@@ -95,7 +95,11 @@ class TrayIcon:
         self._icon = None
         self._thread: Optional[threading.Thread] = None
 
-        ASSETS_DIR.mkdir(exist_ok=True)
+        # v1.0.34: ASSETS_DIR pode ser read-only quando empacotado em _internal/.
+        try:
+            ASSETS_DIR.mkdir(exist_ok=True)
+        except (PermissionError, OSError):
+            pass
 
     def start(self):
         """Inicia o tray icon em thread separada."""

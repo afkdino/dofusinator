@@ -8,11 +8,11 @@ import logging
 import re
 from pathlib import Path
 
-from settings import get_app_dir
+from settings import get_app_dir, get_resource_dir
 
 log = logging.getLogger(__name__)
 
-SLANG_FILE = get_app_dir() / "slang_dictionary.json"
+SLANG_FILE = get_resource_dir() / "slang_dictionary.json"
 
 # Dicionário default - será gravado como JSON na primeira execução.
 # Usuário pode editar livremente.

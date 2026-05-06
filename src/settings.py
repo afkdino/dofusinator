@@ -16,6 +16,26 @@ def get_app_dir() -> Path:
     return Path(__file__).parent.parent
 
 
+def get_resource_dir() -> Path:
+    """
+    Retorna a pasta onde estao os assets bundleados (sounds, assets, dicts).
+
+    v1.0.34: PyInstaller --onedir poe assets em _internal/ ao lado do .exe.
+    Antes desse fix, o app procurava em get_app_dir()/sounds (raiz do exe)
+    e nao achava nada quando empacotado, mesmo PyInstaller bundleando ok.
+
+    - Modo dev (python src/main.py): raiz do projeto.
+    - Modo empacotado (PyInstaller --onedir): pasta _internal/ ao lado do .exe.
+
+    Use isso pra recursos READ-ONLY que vem com a instalacao (sons, icones,
+    dicts, etc). Pra arquivos READ/WRITE do usuario (settings, cache,
+    history) continua usando get_app_dir() — esses ficam ao lado do .exe.
+    """
+    if getattr(sys, 'frozen', False):
+        return Path(sys.executable).parent / "_internal"
+    return Path(__file__).parent.parent
+
+
 SETTINGS_FILE = get_app_dir() / "settings.json"
 
 DEFAULTS = {

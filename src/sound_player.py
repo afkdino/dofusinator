@@ -16,11 +16,14 @@ import threading
 import wave
 from pathlib import Path
 
-from settings import Settings, get_app_dir
+from settings import Settings, get_app_dir, get_resource_dir
 
 log = logging.getLogger(__name__)
 
-SOUNDS_DIR = get_app_dir() / "sounds"
+# v1.0.34: SOUNDS_DIR usa get_resource_dir() pra achar a pasta sounds/
+# dentro de _internal/ quando empacotado. TEMP_DIR continua em get_app_dir()
+# porque eh writable (cache de volume gerado em runtime).
+SOUNDS_DIR = get_resource_dir() / "sounds"
 TEMP_DIR = get_app_dir() / ".sound_cache"
 
 
@@ -84,7 +87,13 @@ def _multiply_samples(frames: bytes, sampwidth: int, factor: float) -> bytes:
 class SoundPlayer:
     def __init__(self, settings: Settings):
         self.settings = settings
-        SOUNDS_DIR.mkdir(exist_ok=True)
+        # v1.0.34: SOUNDS_DIR pode ser read-only quando empacotado em _internal/.
+        # exist_ok=True ja funciona se pasta ja existe, mas no caso de
+        # permissao restrita o mkdir levantaria PermissionError. Tratamos.
+        try:
+            SOUNDS_DIR.mkdir(exist_ok=True)
+        except (PermissionError, OSError):
+            pass
         TEMP_DIR.mkdir(exist_ok=True)
         self._cache: dict[str, str] = {}
         self._cache_lock = threading.Lock()
