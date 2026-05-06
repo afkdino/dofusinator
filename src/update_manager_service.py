@@ -68,7 +68,9 @@ class DofusUpdater:
         except Exception:
             return None
 
-    def check_async(self, on_available: Callable[[str], None]) -> None:
+    def check_async(self, on_available: Callable[[str], None],
+                    on_uptodate: Optional[Callable[[], None]] = None,
+                    on_error: Optional[Callable[[str], None]] = None) -> None:
         """
         Verifica updates em background.
 
@@ -77,9 +79,18 @@ class DofusUpdater:
                 Recebe a string da versão nova (ex: "1.1.1").
                 Esse callback roda numa thread de background — quem
                 consome deve marshallar pro main thread se for mexer em UI.
+            on_uptodate: callback opcional chamado quando NAO ha update
+                disponivel (versao atual eh a mais recente). Sem args.
+            on_error: callback opcional chamado em caso de falha de rede ou
+                outro erro. Recebe string com a mensagem de erro.
         """
         if not self.is_active:
             log.debug("check_async: pulando (modo DEV)")
+            if on_error:
+                try:
+                    on_error("DEV mode")
+                except Exception:
+                    pass
             return
 
         def _work():
@@ -87,6 +98,11 @@ class DofusUpdater:
                 info = self._manager.check_for_updates()
                 if info is None:
                     log.info("Nenhuma atualização disponível.")
+                    if on_uptodate:
+                        try:
+                            on_uptodate()
+                        except Exception as e:
+                            log.error(f"Callback on_uptodate levantou: {e}", exc_info=True)
                     return
                 self._update_info = info
                 new_version = self.latest_version or "?"
@@ -98,6 +114,11 @@ class DofusUpdater:
             except Exception as e:
                 # Falha de rede, repo inacessível, etc. NÃO quebra o app.
                 log.warning(f"Falha ao verificar atualização: {e}")
+                if on_error:
+                    try:
+                        on_error(str(e))
+                    except Exception as cbe:
+                        log.error(f"Callback on_error levantou: {cbe}", exc_info=True)
 
         thread = threading.Thread(
             target=_work,

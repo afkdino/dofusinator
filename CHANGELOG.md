@@ -1,9 +1,31 @@
 # Changelog
 
 All notable changes to Dofusinator are documented here.
+
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), versioning follows [Semantic Versioning](https://semver.org/).
 
----
+## [1.0.34] — 2026-05-06
+
+### Added
+- Velopack auto-update scaffolding (`update_manager_service.py`, hooks in main entry)
+- Build pipeline now uses Velopack instead of Inno Setup
+- Splash image during installation
+
+### Changed
+- Build system completely rewritten: `Dofusinator.spec` auto-scans `src/` for modules, `build.bat` runs `vpk pack`, replacing the previous Inno Setup workflow
+
+### Fixed
+- Quick input popup (`Ctrl+Shift+T`) sizing regression
+- Sound files not loading in installed builds (resource path now correctly resolves to PyInstaller's `_internal/` directory when frozen)
+- Asset paths for tray icon and slang dictionary in installed builds
+
+## [1.0.33] — 2026-05-05
+
+### Changed
+- App description and metadata now correctly reflect the 4 supported translation languages (French, Portuguese, English, Spanish) — no longer implies the app is limited to FR↔PT.
+
+### Fixed
+- Executable copyright string updated with proper legal name and current year.
 
 ## [1.0.32] — 2026-05-05
 

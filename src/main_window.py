@@ -26,6 +26,7 @@ from monitor_utils import get_monitors, get_monitor_key
 from custom_titlebar import apply_custom_titlebar, _win32_minimize
 from theme import get_theme, list_theme_names, THEME_LABELS
 from toast_notification import ToastManager
+from update_dialog import UpdateDialog  # v1.0.34/Fase 4: modal de update Velopack
 from auto_apply import AutoApply
 from spacing import (
     SPACING_SM, SPACING_MD, SPACING_LG, SPACING_XL, SPACING_XXL,
@@ -113,6 +114,191 @@ class MainWindow:
 
         # v1.0.21: registra callback do botão "colapsar" da titlebar do overlay
         self.overlay.on_collapse_request = self._collapse_overlay_to_pill
+
+        # === v1.0.34/Fase 4: Auto-update check ===
+        # 5 segundos após startup, checa GitHub Releases por update novo.
+        # Em modo dev (updater.is_active=False), no-op silencioso.
+        # Quando há update, mostra toast Discord-style topo-central que abre
+        # modal de confirmação ao clicar.
+        self._pending_update_version: Optional[str] = None  # cacheia versão detectada
+        self._update_dialog: Optional[UpdateDialog] = None
+        self.root.after(5000, self._check_for_updates)
+
+    # ===========================================================================
+    # v1.0.34/Fase 4 — Auto-update flow
+    # ===========================================================================
+
+    def _check_for_updates(self):
+        """
+        Dispara checagem assíncrona de update.
+
+        Chamado 5s após startup pra não atrasar UI initial render.
+        Em modo dev (updater.is_active=False), retorna imediatamente.
+        Se updater encontrar versão nova, callback _on_update_available
+        marshalla pra main thread e mostra o toast.
+        """
+        if self.updater is None or not self.updater.is_active:
+            log.debug("Auto-update: skip (updater inativo / modo dev)")
+            return
+
+        log.info("Auto-update: checando GitHub Releases por nova versão...")
+
+        def on_available(new_version: str):
+            # Roda em background thread — marshalla pro main thread
+            try:
+                self.root.after(0, lambda: self._on_update_available(new_version))
+            except Exception as e:
+                log.error(f"Erro marshallando update available: {e}", exc_info=True)
+
+        # v1.0.34/Fase 4: passa on_uptodate e on_error mas no startup auto-check
+        # nao precisamos fazer nada nos casos negativos (silent no-op). UI manual
+        # da aba Avancado eh quem usa esses callbacks.
+        try:
+            self.updater.check_async(on_available=on_available)
+        except Exception as e:
+            log.error(f"Erro ao iniciar check_async: {e}", exc_info=True)
+
+    def _on_update_available(self, new_version: str):
+        """
+        Callback no main thread quando update foi detectado.
+        Mostra toast Discord-style com callback de click.
+        """
+        log.info(f"Auto-update: versão {new_version} disponível!")
+        self._pending_update_version = new_version
+
+        toast_text = f"🚀 Nova versão {new_version} disponível! Clique pra atualizar."
+        self._toast_mgr.show(
+            text=toast_text,
+            level='update',
+            on_click=self._on_update_toast_clicked,
+        )
+
+    def _on_update_toast_clicked(self):
+        """User clicou no toast → abre dialog modal de confirmação."""
+        if not self._pending_update_version:
+            log.warning("Update toast clicado mas sem versão pendente?")
+            return
+        if self._update_dialog is not None and \
+           self._update_dialog.window is not None and \
+           self._update_dialog.window.winfo_exists():
+            log.debug("Update dialog ja aberto, focando...")
+            self._update_dialog.window.lift()
+            return
+
+        # Pega versão atual de app_info (single source of truth)
+        from app_info import APP_VERSION as current_v
+
+        log.info(f"Abrindo UpdateDialog: {current_v} → {self._pending_update_version}")
+        self._update_dialog = UpdateDialog(
+            master=self.root,
+            theme=self._t,
+            current_version=current_v,
+            new_version=self._pending_update_version,
+            updater=self.updater,
+            on_close=lambda: setattr(self, '_update_dialog', None),
+        )
+        self._update_dialog.show()
+
+    def _on_check_updates_clicked(self):
+        """
+        v1.0.34/Fase 4: User clicou no botao 'Verificar atualizacoes' da aba
+        Avancado. Faz check manual sincrono (com feedback inline no label).
+
+        - Em modo dev: nao deveria nem ser clicavel (label ja mostra devmode),
+          mas se chamar mesmo assim, atualiza pra devmode hint.
+        - Em modo prod: dispara check_async, atualiza label conforme states.
+        """
+        if self.updater is None or not self.updater.is_active:
+            self._set_update_status(
+                t("advanced.updates.status.devmode"), dim=True,
+            )
+            return
+
+        log.info("Check manual de update disparado pelo usuario")
+        # Desabilita botao durante check pra evitar duplo clique
+        try:
+            self._update_check_btn.configure(state='disabled')
+        except Exception:
+            pass
+
+        self._set_update_status(t("advanced.updates.status.checking"), dim=True)
+
+        def _re_enable_btn():
+            try:
+                self._update_check_btn.configure(state='normal')
+            except Exception:
+                pass
+
+        def on_available(new_version: str):
+            # Marshalla pro main thread
+            try:
+                self.root.after(0, lambda: self._handle_check_available(new_version))
+                self.root.after(0, _re_enable_btn)
+            except Exception as e:
+                log.error(f"on_available marshall: {e}", exc_info=True)
+
+        def on_uptodate():
+            try:
+                self.root.after(0, lambda: self._set_update_status(
+                    t("advanced.updates.status.uptodate"), dim=False,
+                ))
+                self.root.after(0, _re_enable_btn)
+            except Exception as e:
+                log.error(f"on_uptodate marshall: {e}", exc_info=True)
+
+        def on_error(err_msg: str):
+            try:
+                self.root.after(0, lambda: self._set_update_status(
+                    t("advanced.updates.status.error"), dim=True,
+                ))
+                self.root.after(0, _re_enable_btn)
+            except Exception as e:
+                log.error(f"on_error marshall: {e}", exc_info=True)
+
+        try:
+            self.updater.check_async(
+                on_available=on_available,
+                on_uptodate=on_uptodate,
+                on_error=on_error,
+            )
+        except Exception as e:
+            log.error(f"check_async manual falhou: {e}", exc_info=True)
+            self._set_update_status(t("advanced.updates.status.error"), dim=True)
+            _re_enable_btn()
+
+    def _handle_check_available(self, new_version: str):
+        """Helper: check manual encontrou update — atualiza label E armazena
+        versao pra reaproveitar o flow do toast (clicar no label abre dialog)."""
+        self._pending_update_version = new_version
+        # Mostra label clicavel com a versao
+        msg = t("advanced.updates.status.available").format(version=new_version)
+        self._set_update_status(msg, dim=False, clickable=True)
+
+    def _set_update_status(self, text_str: str, dim: bool = True,
+                           clickable: bool = False):
+        """Atualiza o label de status da seção Atualizações."""
+        try:
+            theme = self._t
+            color = theme.get('text_dim', '#888') if dim else theme.get('accent', '#c5a572')
+            self._update_status_label.configure(
+                text=text_str, text_color=color,
+            )
+            # Se for clickable, bind do click → abre dialog
+            if clickable:
+                # Cursor mao + bind
+                self._update_status_label.configure(cursor='hand2')
+                self._update_status_label.bind(
+                    '<Button-1>',
+                    lambda e: self._on_update_toast_clicked(),
+                )
+            else:
+                self._update_status_label.configure(cursor='')
+                try:
+                    self._update_status_label.unbind('<Button-1>')
+                except Exception:
+                    pass
+        except Exception as e:
+            log.error(f"_set_update_status: {e}", exc_info=True)
 
     def _build(self):
         theme = self._t
@@ -1788,6 +1974,40 @@ class MainWindow:
         self.log_var = tk.BooleanVar(value=self.settings.get('logging_enabled', False))
         self._checkbox(frame, t("advanced.logging"),
                        self.log_var).pack(anchor='w', pady=2)
+
+        # === v1.0.34/Fase 4: Atualizações ===
+        # Seção pra checagem manual de updates Velopack. Em modo dev (is_active=False)
+        # mostra mensagem informativa em vez do botão funcional.
+        self._section_header(frame, t("advanced.section.updates")).pack(anchor='w', pady=(14, 0))
+
+        from app_info import APP_VERSION as _current_v
+        self._label(
+            frame,
+            t("advanced.updates.current").format(version=_current_v),
+            dim=True,
+        ).pack(anchor='w', pady=(0, SPACING_SM))
+
+        # Botão de check
+        self._update_check_btn = self._secondary_button(
+            frame,
+            t("advanced.updates.btn.check"),
+            self._on_check_updates_clicked,
+        )
+        self._update_check_btn.pack(anchor='w', pady=(0, 4))
+
+        # Label de status (vazio inicial, preenchido conforme estados)
+        # Se o updater nao for ativo (modo dev), mostra mensagem informativa logo de cara
+        if self.updater is None or not self.updater.is_active:
+            initial_status = t("advanced.updates.status.devmode")
+            initial_dim = True
+        else:
+            initial_status = ""
+            initial_dim = True
+
+        self._update_status_label = self._label(
+            frame, initial_status, dim=initial_dim, wraplength=520,
+        )
+        self._update_status_label.pack(anchor='w', pady=(0, SPACING_SM))
 
         # v1.0.30: auto-apply nas vars principais do Avançado
         if hasattr(self, 'tess_path_var'):

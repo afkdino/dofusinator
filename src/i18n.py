@@ -694,6 +694,52 @@ TRANSLATIONS = {
     'advanced.section.support': {
         'pt': 'Suporte', 'en': 'Support', 'fr': 'Support', 'es': 'Soporte',
     },
+    # v1.0.34/Fase 4: Verificação manual de updates Velopack
+    'advanced.section.updates': {
+        'pt': 'Atualizações', 'en': 'Updates', 'fr': 'Mises à jour', 'es': 'Actualizaciones',
+    },
+    'advanced.updates.current': {
+        'pt': 'Versão atual: {version}',
+        'en': 'Current version: {version}',
+        'fr': 'Version actuelle: {version}',
+        'es': 'Versión actual: {version}',
+    },
+    'advanced.updates.btn.check': {
+        'pt': '🔍 Verificar atualizações',
+        'en': '🔍 Check for updates',
+        'fr': '🔍 Vérifier les mises à jour',
+        'es': '🔍 Buscar actualizaciones',
+    },
+    'advanced.updates.status.checking': {
+        'pt': 'Verificando...',
+        'en': 'Checking...',
+        'fr': 'Vérification...',
+        'es': 'Verificando...',
+    },
+    'advanced.updates.status.uptodate': {
+        'pt': '✓ Você está usando a versão mais recente.',
+        'en': '✓ You are using the latest version.',
+        'fr': '✓ Vous utilisez la dernière version.',
+        'es': '✓ Estás usando la versión más reciente.',
+    },
+    'advanced.updates.status.available': {
+        'pt': '🚀 Versão {version} disponível! Clique pra atualizar.',
+        'en': '🚀 Version {version} available! Click to update.',
+        'fr': '🚀 Version {version} disponible! Cliquez pour mettre à jour.',
+        'es': '🚀 ¡Versión {version} disponible! Haz clic para actualizar.',
+    },
+    'advanced.updates.status.error': {
+        'pt': 'Erro ao verificar. Tente novamente em instantes.',
+        'en': 'Check failed. Try again in a moment.',
+        'fr': 'Échec de la vérification. Réessayez dans un instant.',
+        'es': 'Falló la verificación. Inténtalo de nuevo en un momento.',
+    },
+    'advanced.updates.status.devmode': {
+        'pt': 'Atualizações automáticas só funcionam no app instalado.',
+        'en': 'Auto-updates only work on the installed app.',
+        'fr': 'Les mises à jour ne fonctionnent que sur l\'app installée.',
+        'es': 'Las actualizaciones solo funcionan en la app instalada.',
+    },
     'advanced.btn.report': {
         'pt': '📧 Reportar Problema...',
         'en': '📧 Report a Problem...',
