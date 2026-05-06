@@ -10,6 +10,12 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), version
 - Velopack auto-update scaffolding (`update_manager_service.py`, hooks in main entry)
 - Build pipeline now uses Velopack instead of Inno Setup
 - Splash image during installation
+- Auto-update UI: 5s post-startup background check, Discord-style toast notification, modal dialog with download progress, and a manual "Check for updates" button in the Advanced tab
+
+### Added
+- Velopack auto-update scaffolding (`update_manager_service.py`, hooks in main entry)
+- Build pipeline now uses Velopack instead of Inno Setup
+- Splash image during installation
 
 ### Changed
 - Build system completely rewritten: `Dofusinator.spec` auto-scans `src/` for modules, `build.bat` runs `vpk pack`, replacing the previous Inno Setup workflow

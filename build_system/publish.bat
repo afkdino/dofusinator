@@ -18,20 +18,9 @@ REM
 REM Como rodar:
 REM   publish.bat        (publish da versao atual no app_info.py)
 REM
-REM v1.0.34: criado, mas BLOQUEADO via 'exit /b 0' inicial.
-REM          Ative na Fase 5 quando for fazer a primeira release oficial.
+REM v1.1.0/Fase 5: ativo. Primeira release publica feita em 2026-05-06.
 
 setlocal enabledelayedexpansion
-
-REM ============================================================
-REM FASE 5: REMOVE ESSAS 5 LINHAS QUANDO FOR PUBLICAR DE VERDADE
-REM ============================================================
-echo.
-echo [INFO] publish.bat ainda nao foi habilitado.
-echo [INFO] Esse script sera ativado na Fase 5 da migracao Velopack.
-echo [INFO] Por enquanto, so rodar build.bat.
-echo.
-exit /b 0
 
 set "SCRIPT_DIR=%~dp0"
 set "PROJECT_ROOT=%SCRIPT_DIR%.."
@@ -78,7 +67,7 @@ vpk download github ^
     --repoUrl %REPO_URL% ^
     --outputDir Releases
 if errorlevel 1 (
-    echo %YELLOW%[WARN] Download falhou (provavelmente primeira release, OK).%RESET%
+    echo %YELLOW%[WARN] Download falhou - provavelmente primeira release, OK.%RESET%
 )
 
 REM === STEP 2: Build + Pack ===
