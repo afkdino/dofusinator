@@ -5,7 +5,7 @@ Metadados centrais do app. Single source of truth.
 APP_NAME = "Dofusinator"
 APP_TAGLINE = "Translator"
 APP_FULL_NAME = "Dofusinator (Translator)"
-APP_VERSION = "1.0.34"
+APP_VERSION = "1.1.0"
 APP_AUTHOR = "@afkdino"
 APP_AUTHOR_FULL = "@afkdino"
 # v1.0.33: separação entre handle (usado em metadata técnico, paths, registry)

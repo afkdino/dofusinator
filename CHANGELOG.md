@@ -4,6 +4,14 @@ All notable changes to Dofusinator are documented here.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), versioning follows [Semantic Versioning](https://semver.org/).
 
+## [1.1.0] — 2026-05-06
+
+### Highlight
+- 🚀 First public release on GitHub! Auto-update powered by Velopack.
+
+### Changed
+- Version bumped from v1.0.34 to v1.1.0 to mark transition from internal scaffolding to public release.
+
 ## [1.0.34] — 2026-05-06
 
 ### Added
