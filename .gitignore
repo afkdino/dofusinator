@@ -29,3 +29,5 @@ settings.json
 *.swp
 .DS_Store
 Thumbs.db
+
+.sound_cache/
