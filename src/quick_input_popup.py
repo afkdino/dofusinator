@@ -142,6 +142,9 @@ class QuickInputPopup:
                 x, y = 100, 100
 
         x, y = self._clamp_to_screen(x, y, self.POPUP_WIDTH, self.POPUP_HEIGHT)
+        # v1.1.0: NAO inclui WxH no geometry — deixa Tk calcular tamanho natural
+        # baseado no conteudo (input + pills + auto-send em linha = ~1100x108).
+        # Forçar 480x105 deixava as pills minusculas e auto-send sem espaço.
         self.window.geometry(f"+{x}+{y}")
 
     def _clamp_to_screen(self, x: int, y: int, w: int, h: int) -> tuple[int, int]:
@@ -404,6 +407,7 @@ class QuickInputPopup:
     def _on_drag(self, event):
         x = event.x_root - self._drag_start_x
         y = event.y_root - self._drag_start_y
+        # v1.1.0: idem _reposition — só posição, sem WxH
         self.window.geometry(f"+{x}+{y}")
 
     # ===========================================================================

@@ -13,7 +13,7 @@
 ; Output: dist/DofusinatorSetup.exe
 
 #define APP_NAME "Dofusinator"
-#define APP_VERSION "1.0.33"
+#define APP_VERSION "1.0.34"
 #define APP_PUBLISHER "@afkdino"
 #define APP_COPYRIGHT "Copyright (c) 2026 Guilherme G. Ferreira"
 #define APP_DESCRIPTION "Dofusinator - Real-time chat translator for Dofus Retro (FR/PT/EN/ES)"

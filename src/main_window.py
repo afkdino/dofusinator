@@ -65,7 +65,8 @@ class MainWindow:
         chat_history=None,  # v1.0.21
         on_close_app=None,
         on_minimize_to_tray=None,
-    ):
+        updater=None,  # v1.1.0: auto-update service (placeholder — usado na Fase 4)
+        ):
         self.root = root
         self.settings = settings
         self.translator = translator
@@ -78,6 +79,7 @@ class MainWindow:
         self.chat_history = chat_history  # v1.0.21: pra UI/limpar
         self.on_close_app = on_close_app
         self.on_minimize_to_tray = on_minimize_to_tray
+        self.updater = updater
         self.custom_terms_popup = CustomTermsPopup(root, custom_terms, settings)
 
         self.preview_widget: Optional[tk.Text] = None

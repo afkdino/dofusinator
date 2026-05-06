@@ -1,0 +1,6 @@
+146 INFO: PyInstaller: 6.20.0, contrib hooks: 2026.4
+146 INFO: Python: 3.14.4
+175 INFO: Platform: Windows-11-10.0.26200-SP0
+175 INFO: Python environment: C:\Users\Rosinha\AppData\Local\Programs\Python\Python314
+177 INFO: Removing temporary files and cleaning cache in C:\Users\Rosinha\AppData\Local\pyinstaller
+ERROR: Spec file "build_system\Dofusinator.spec" not found!

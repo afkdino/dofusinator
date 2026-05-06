@@ -16,6 +16,10 @@ REM   build.bat              (build completo)
 REM   build.bat clean        (limpa builds antigos)
 REM   build.bat exe          (so o exe, sem instalador)
 REM   build.bat installer    (so o instalador, assume exe existe)
+REM
+REM v1.1.0: Limpeza mais profunda do cache do PyInstaller pra evitar
+REM         ModuleNotFoundError fantasmas (cache stale entre versoes do
+REM         spec que muda hidden_imports).
 
 setlocal enabledelayedexpansion
 
@@ -49,7 +53,11 @@ echo %YELLOW%[CLEAN] Removendo builds antigos...%RESET%
 if exist "build" rd /s /q build
 if exist "dist" rd /s /q dist
 if exist "build_system\build" rd /s /q build_system\build
+REM v1.1.0: limpa tambem caches do PyInstaller que ficam em outros lugares
 if exist "*.spec.bak" del *.spec.bak
+if exist "__pycache__" rd /s /q __pycache__
+if exist "src\__pycache__" rd /s /q src\__pycache__
+if exist "build_system\__pycache__" rd /s /q build_system\__pycache__
 echo %GREEN%[OK] Limpeza concluida.%RESET%
 goto end
 
@@ -96,6 +104,18 @@ if errorlevel 1 (
 )
 echo   %GREEN%OK%RESET% PyInstaller pronto
 
+REM v1.1.0: confere se velopack ta instalado
+python -c "import velopack" >nul 2>&1
+if errorlevel 1 (
+    echo %YELLOW%[WARN] velopack nao encontrado. Instalando...%RESET%
+    pip install velopack
+    if errorlevel 1 (
+        echo %RED%[ERRO] Falha ao instalar velopack.%RESET%
+        exit /b 1
+    )
+)
+echo   %GREEN%OK%RESET% velopack pronto
+
 REM Procura Inno Setup ISCC
 set "ISCC_PATH="
 if exist "%ProgramFiles(x86)%\Inno Setup 6\ISCC.exe" set "ISCC_PATH=%ProgramFiles(x86)%\Inno Setup 6\ISCC.exe"
@@ -103,7 +123,7 @@ if exist "%ProgramFiles%\Inno Setup 6\ISCC.exe" set "ISCC_PATH=%ProgramFiles%\In
 if "%ISCC_PATH%"=="" (
     echo %YELLOW%[WARN] Inno Setup nao encontrado.%RESET%
     echo   Baixe em: https://jrsoftware.org/isdl.php
-    echo   (necessario apenas pra etapa do instalador, build do .exe segue)
+    echo   ^(necessario apenas pra etapa do instalador, build do .exe segue^)
 )
 if not "%ISCC_PATH%"=="" echo   %GREEN%OK%RESET% Inno Setup: %ISCC_PATH%
 
@@ -117,13 +137,17 @@ exit /b 0
 
 :build_exe
 echo %CYAN%[BUILD] Compilando Dofusinator (onedir) via PyInstaller...%RESET%
-echo   (Isso pode levar 1-3 minutos)
+echo   ^(Isso pode levar 1-3 minutos^)
 echo.
 
 cd /d "%PROJECT_ROOT%"
 
-REM Remove build folder antigo pra evitar lixo
+REM v1.1.0: Limpeza profunda ANTES de buildar pra eliminar caches stale
+echo %CYAN%[CLEAN] Limpando caches do PyInstaller...%RESET%
 if exist "build" rd /s /q build
+if exist "dist" rd /s /q dist
+if exist "src\__pycache__" rd /s /q src\__pycache__
+if exist "build_system\__pycache__" rd /s /q build_system\__pycache__
 
 python -m PyInstaller --noconfirm --clean build_system\Dofusinator.spec
 if errorlevel 1 (
@@ -188,8 +212,8 @@ echo %GREEN%  Build completo!%RESET%
 echo %CYAN%========================================%RESET%
 echo.
 echo Arquivos prontos:
-echo   - dist\Dofusinator\            (pasta com .exe + DLLs)
-echo   - dist\DofusinatorSetup_*.exe  (instalador pra distribuir)
+echo   - dist\Dofusinator\            ^(pasta com .exe + DLLs^)
+echo   - dist\DofusinatorSetup_*.exe  ^(instalador pra distribuir^)
 echo.
 exit /b 0
 

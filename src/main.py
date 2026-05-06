@@ -5,6 +5,8 @@ Entry point principal.
 import sys
 import logging
 
+import velopack  # v1.1.0: auto-update via Velopack
+
 import customtkinter as ctk
 
 from app_info import APP_NAME, APP_FULL_NAME, APP_VERSION, APP_AUTHOR, APP_ID
@@ -36,6 +38,12 @@ def setup_logging(enabled: bool):
 
 
 def main():
+    # v1.1.0: PRIMEIRO de tudo — Velopack handles install/uninstall/update hooks.
+    # Quando rodando via Setup.exe ou Update.exe com flags --veloapp-*,
+    # esse run() executa o hook correspondente e SAI silenciosamente.
+    # Em execução normal (modo dev ou app já instalado), retorna sem fazer nada.
+    velopack.App().run()
+
     settings = Settings()
     settings.load()
 
@@ -66,6 +74,12 @@ def main():
     from chat_history_manager import ChatHistoryManager
     chat_history = ChatHistoryManager(settings)
     sound_player = SoundPlayer(settings)
+
+    # v1.1.0: Auto-update service. Cria sem checar updates ainda —
+    # main_window vai chamar check_async depois que UI estiver montada.
+    from update_manager_service import DofusUpdater
+    updater = DofusUpdater()
+    log.info(f"DofusUpdater is_active={updater.is_active}")
     translator = TranslatorService(settings, slang, custom_terms)
     ocr = OCREngine(settings)
 
@@ -151,6 +165,7 @@ def main():
         hotkey_mgr=hotkey_mgr,
         sound_player=sound_player,
         chat_history=chat_history,  # v1.0.21
+        updater=updater,  # v1.1.0: auto-update service
         on_close_app=on_quit,
         on_minimize_to_tray=on_minimize_to_tray,
     )
